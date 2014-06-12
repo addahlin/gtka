@@ -1,0 +1,58 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'install' ]
+2 info using npm@1.4.9
+3 info using node@v0.10.28
+4 verbose readDependencies using package.json deps
+5 verbose install where, deps [ '/Users/addahlin/WebstormProjects/GTKNodeJS', [ 'express' ] ]
+6 info preinstall GTKBackend@0.0.1
+7 verbose readDependencies using package.json deps
+8 verbose cache add [ 'express@4.x', null ]
+9 verbose cache add name=undefined spec="express@4.x" args=["express@4.x",null]
+10 verbose parsed url { protocol: null,
+10 verbose parsed url   slashes: null,
+10 verbose parsed url   auth: null,
+10 verbose parsed url   host: null,
+10 verbose parsed url   port: null,
+10 verbose parsed url   hostname: null,
+10 verbose parsed url   hash: null,
+10 verbose parsed url   search: null,
+10 verbose parsed url   query: null,
+10 verbose parsed url   pathname: 'express@4.x',
+10 verbose parsed url   path: 'express@4.x',
+10 verbose parsed url   href: 'express@4.x' }
+11 verbose cache add name="express" spec="4.x" args=["express","4.x"]
+12 verbose parsed url { protocol: null,
+12 verbose parsed url   slashes: null,
+12 verbose parsed url   auth: null,
+12 verbose parsed url   host: null,
+12 verbose parsed url   port: null,
+12 verbose parsed url   hostname: null,
+12 verbose parsed url   hash: null,
+12 verbose parsed url   search: null,
+12 verbose parsed url   query: null,
+12 verbose parsed url   pathname: '4.x',
+12 verbose parsed url   path: '4.x',
+12 verbose parsed url   href: '4.x' }
+13 verbose addNamed [ 'express', '4.x' ]
+14 verbose addNamed [ null, '>=4.0.0-0 <5.0.0-0' ]
+15 silly lockFile 72215064-express-4-x express@4.x
+16 verbose lock express@4.x /Users/addahlin/.npm/72215064-express-4-x.lock
+17 silly lockFile 72215064-express-4-x express@4.x
+18 error Error: Attempt to unlock express@4.x, which hasn't been locked
+18 error     at unlock (/usr/local/lib/node_modules/npm/lib/cache.js:1434:11)
+18 error     at cb (/usr/local/lib/node_modules/npm/lib/cache.js:675:5)
+18 error     at /usr/local/lib/node_modules/npm/lib/cache.js:684:20
+18 error     at /usr/local/lib/node_modules/npm/lib/cache.js:1420:7
+18 error     at /usr/local/lib/node_modules/npm/node_modules/lockfile/lockfile.js:167:38
+18 error     at OpenReq.Req.done (/usr/local/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:144:5)
+18 error     at OpenReq.done (/usr/local/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:64:22)
+18 error     at Object.oncomplete (fs.js:107:15)
+19 error If you need help, you may report this *entire* log,
+19 error including the npm and node versions, at:
+19 error     <http://github.com/npm/npm/issues>
+20 error System Darwin 13.2.0
+21 error command "/usr/local/bin/node" "/usr/local/bin/npm" "install"
+22 error cwd /Users/addahlin/WebstormProjects/GTKNodeJS
+23 error node -v v0.10.28
+24 error npm -v 1.4.9
+25 verbose exit [ 1, true ]

@@ -1,0 +1,83 @@
+<html>
+<head>
+
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <!--<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    <script type="text/template" id="quiz-list-template">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>type</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% _.each(quizzes, function (quiz, i) { %>
+            <tr>
+                <td><a href='<%= quiz.getQuizURL() %>'><%=quiz.get('title') %></a></td>
+                <td><%= quiz.get('desc') %></td>
+                <td><%= quiz.get('quizType') %></td>
+            </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </script>
+
+</head>
+<body>
+
+<div class="container" id="content">
+
+
+</div>
+
+
+<script type="text/javascript">
+
+    var Quiz = Backbone.Model.extend({
+
+        defaults: {
+            quizType: 'QN',
+            title: '',
+            desc: '',
+            pub_date: '',
+            id: null
+        },
+        getQuizURL : function() {
+            return "/quizzes/" + this.get("_id") + "/"
+        }
+
+    });
+
+    var QuizCollection = Backbone.Collection.extend({
+        model: Quiz,
+        url: '/api/quizzes'
+    })
+
+    //On document ready...
+    $(function() {
+        console.log( "ready!" );
+        var quizzes = new QuizCollection;
+        quizzes.fetch({
+            success: function () {
+                var template = _.template($('#quiz-list-template').html(), {"quizzes": quizzes.toArray()});
+                $("#content").html(template);
+            },
+            error: function(){
+                $("#content").html("Error Retrieving Quizzes");
+            }
+        });
+
+
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,163 @@
+<html>
+<head>
+
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <!--<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    <script type="text/template" id="quiz-header-template">
+        <h1> <%= title %> <br/> <small><blockquote> <%= description %> </blockquote></small></h1>
+        <h2></h2>
+    </script>
+
+    <script type="text/template" id="question-template">
+        <div class="question well" data-question-id="<%= questionID %>">
+            <div class="questionTextContainer">
+                <%= question %>
+            </div>
+            <div class="choicesContainer">
+                <% _.each(choices, function (choice, i) { %>
+                <div class="choice well" data-choice-id="<%= choice.id %>">
+                    <%= choices[i] %> <br />
+                </div>
+                <% }); %>
+            </div>
+        </div>
+    </script>
+
+    <style>
+        .selected {background-color: lightblue;}
+
+    </style>
+
+</head>
+<body>
+<div id="mainContent" class="container">
+    <div id="headerInfo"></div>
+
+
+    <div id="content"></div>
+
+    <button type="button" class="btn btn-info" id="submitQuiz">Submit</button>
+</div>
+<script type="text/javascript">
+
+    var FullQuiz = Backbone.Model.extend({
+        urlRoot: '/api/quizzes/',
+        defaults: {
+            quizType: 'QN',
+            title: '',
+            desc: '',
+            pub_date: '',
+            id: null,
+            questions: []
+
+        }
+
+    });
+
+    submitQuiz = function () {
+        //Check that all the questions were answered
+        numQuestions = $(".question").length;
+        answeredQuestions = $(".choicesContainer>.selected").length;
+        if (numQuestions != answeredQuestions){
+            alert ("You need to answer all the questions!");
+            return;
+        }
+
+        //Package up all the answers in the form {q1ID : a1ID, q2ID : a2ID, ...}
+        var quizResults = {};
+        $(".question").each(function(i, val){
+            var questionID = $(val).attr("data-question-id");
+
+            var answerID = $($(val).find(".selected")[0]).attr("data-choice-id");
+            quizResults[questionID] = answerID;
+        });
+
+        console.log("quizResults: ");
+        console.log(quizResults);
+        $.ajax({
+            type: "POST",
+            url: "/quizzes/UploadFinishedQuiz/",
+            "data": {
+                "answers": JSON.stringify(quizResults, null, 2),
+                "quizID": quizID,
+                csrfmiddlewaretoken: "{{ csrf_token }}"
+            },
+            success: function () {
+                console.log("uploaded quiz");
+            },
+            error: function ( ) {
+                console.log("Error uploading quiz");
+            }
+
+
+        });
+
+
+    };
+
+    wireUp = function (){
+        //Called when the user clicks on an answer to a question
+        $(".choice").click(function(event) {
+            //Remove any previous choices
+            var selectedChoice = $(this);
+            selectedChoice.parent().children().removeClass("selected");
+
+            selectedChoice.addClass("selected");
+        });
+
+        $("#submitQuiz").click(submitQuiz);
+
+    };
+
+    //On document ready...
+    $(function() {
+
+        quizID = "{{ quizID }}";
+        quiz = new FullQuiz ( {id: quizID} );
+
+        quiz.fetch({
+            success: function () {
+                var template = _.template($('#quiz-header-template').html(),
+                        {
+                            "title": quiz.get("title"),
+                            "description": quiz.get("desc")
+                        }
+                );
+
+                $("#headerInfo").html(template);
+
+                var questions = quiz.get("questions");
+                for (var i = 0; i < questions.length; i++)
+                {
+                    var question = questions[i];
+                    var text = question["text"];
+                    var questionID = question["_id"];
+
+                    var choices = question["answers"];
+
+                    var template = _.template($('#question-template').html(), {"question": text,
+                        "questionID": questionID,
+                        "choices" : choices});
+                    $("#content").append(template);
+                }
+
+                //wire up the UI
+                wireUp();
+            },
+            error: function(){
+                $("#content").html("Error Retrieving Quizzes");
+            }
+        });
+
+
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,201 @@
+<html>
+<head>
+
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <!--<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    <script type="text/template" id="quiz-header-template">
+        <h1> <%= title %> <br/> <small><blockquote> <%= description %> </blockquote></small></h1>
+        <h2></h2>
+    </script>
+
+    <script type="text/template" id="question-template">
+        <div class="question well" data-question-id="<%= questionID %>">
+            <div class="questionTextContainer">
+                <input value="<%= question %>" />
+            </div>
+            <div class="choicesContainer">
+                <% _.each(choices, function (choice, i) { %>
+                <div class="choice well" data-choice-id="<%= choice.id %>">
+                    <%= choices[i] %> <br />
+                </div>
+                <% }); %>
+            </div>
+        </div>
+    </script>
+
+    <style>
+        .selected {background-color: lightblue;}
+
+    </style>
+
+</head>
+<body>
+<div id="mainContent" class="container">
+    <div id="headerInfo"></div>
+
+    <input type="hidden" id="quizID" />
+
+    <div class="row">
+        <div class="col-xs-4">
+            <label for="quizTitle">Title:</label>
+        </div>
+        <div class="col-xs-4">
+            <input id="quizTitle" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-4">
+            <label for="quizDesc">Description:</label>
+        </div>
+        <div class="col-xs-4">
+            <textarea id="quizDesc" ></textarea>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-info" id="saveQuiz">Submit</button>
+
+
+    <div id="content"></div>
+
+</div>
+<script type="text/javascript">
+
+    var FullQuiz = Backbone.Model.extend({
+        urlRoot: '/api/quizzes/',
+        defaults: {
+            quizType: 'QN',
+            title: '',
+            desc: '',
+            pub_date: '',
+            id: null,
+            questions: []
+
+        }
+
+    });
+
+    saveQuiz = function () {
+
+        //Get the form fields
+        var title = $("#quizTitle").val();
+        var desc = $("#quizDesc").val();
+
+        var quizID = $("#quizID").val();
+        console.log("quizID: " + quizID);
+
+        var url = "/api/quizzes";
+        var verb = "PUT";
+        var ajaxData = {
+            "quizType": "QN",
+            "title": title,
+            "desc": desc
+        };
+
+        var createdNewQuiz = (quizID == "-1") ? true : false;
+        //If quizID is -1, we're making a new one
+        if (createdNewQuiz){
+            verb = "POST";
+        } else {
+            url += "/" + quizID;
+        }
+
+        $.ajax({
+            type: verb,
+            "url": url,
+            "data": ajaxData,
+            success: function (data) {
+                var newQuizID = data._id;
+                console.log("uploaded quiz");
+                //Now redirect to the edit page for the quiz
+                var newLocation = window.location;
+                if (createdNewQuiz) {
+                    newLocation += newQuizID;
+                }
+                window.location = newLocation;
+            },
+            error: function ( ) {
+                //TODO: better error output
+                console.log("Error uploading quiz");
+            }
+
+
+        });
+
+
+    };
+
+    wireUp = function (){
+        //Called when the user clicks on an answer to a question
+        $(".choice").click(function(event) {
+            //Remove any previous choices
+            var selectedChoice = $(this);
+            selectedChoice.parent().children().removeClass("selected");
+
+            selectedChoice.addClass("selected");
+        });
+
+        $("#saveQuiz").click(saveQuiz);
+
+    };
+
+    //On document ready...
+    $(function() {
+
+        quizID = "{{ quizID }}";
+        quiz = new FullQuiz ( {id: quizID} );
+
+        //If the quizID is -1, then we're creating a new quiz
+        if (quizID == "-1"){
+            var template = _.template($('#quiz-header-template').html(), {"title": "Create a New Quiz",
+                "description": ""});
+            $("#headerInfo").html(template);
+            $("#quizID").val("-1");
+            //wire up the UI
+            wireUp();
+        } else {
+            //quizID isn't -1, so let's populate some fields..
+            quiz.fetch({
+                success: function () {
+                    var template = _.template($('#quiz-header-template').html(), {"title": quiz.get("title"),
+                        "description": quiz.get("desc")});
+                    $("#headerInfo").html(template);
+
+                    $("#quizID").val(quiz.get("_id"));
+                    $("#quizTitle").val(quiz.get("title"));
+                    $("#quizDesc").val(quiz.get("desc"));
+
+                    var questions = quiz.get("questions");
+                    for (var i = 0; i < questions.length; i++) {
+                        var question = questions[i];
+                        var text = question["text"];
+                        var questionID = question["_id"];
+
+                        var choices = question["answers"];
+
+                        var template = _.template($('#question-template').html(), {"question": text,
+                            "questionID": questionID,
+                            "choices": choices});
+                        $("#content").append(template);
+                    }
+
+                    //wire up the UI
+                    wireUp();
+                },
+                error: function () {
+                    $("#content").html("Error Retrieving Quizzes");
+                }
+            });
+        }
+
+    });
+
+</script>
+
+</body>
+</html>
