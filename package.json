@@ -1,7 +1,7 @@
 {
     "name": "GTKBackend",
     "description": "Backend for Get To Know",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "private": true,
     "dependencies": {
         "express": "4.x"
